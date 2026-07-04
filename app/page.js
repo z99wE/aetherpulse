@@ -23,6 +23,7 @@ import {
   Workflow,
   Zap
 } from "lucide-react";
+import { buildDecisionEngine } from "@/lib/decision-engine";
 import { googleStack, scenarios } from "@/lib/mock-data";
 
 const heroMetrics = [
@@ -156,6 +157,72 @@ const liveNarrative = [
   }
 ];
 
+const navLinks = [
+  { id: "overview", label: "Overview" },
+  { id: "signals", label: "Signal fabric" },
+  { id: "decision", label: "Decision engine" },
+  { id: "agent", label: "Agent trace" },
+  { id: "stack", label: "Google stack" },
+  { id: "governance", label: "Governance" },
+  { id: "contact", label: "Contact" }
+];
+
+const rollingCopy = [
+  "BigQuery keeps the city baseline current",
+  "Vertex AI ranks risk and predicts what happens next",
+  "Gemini turns model output into civic language",
+  "AlloyDB retrieves similar incidents and playbooks",
+  "Cloud Run serves the app and decision API",
+  "Cloud Functions trigger alerts and follow-ups",
+  "Looker surfaces leadership context",
+  "ADK orchestrates observe, reason, retrieve, act"
+];
+
+const platformModules = [
+  {
+    title: "Signal fabric",
+    copy:
+      "Blend telemetry, citizen text, and environmental context into one baseline before scoring risk.",
+    badge: "BigQuery"
+  },
+  {
+    title: "Decision graph",
+    copy:
+      "Fuse evidence, compare it to historical incidents, and rank the safest next action.",
+    badge: "Vertex AI"
+  },
+  {
+    title: "Automation relay",
+    copy:
+      "Route recommendations into Cloud Run and Cloud Functions so the city can act without waiting on a handoff.",
+    badge: "Cloud Run"
+  },
+  {
+    title: "Executive lens",
+    copy:
+      "Package the same decision packet for operators, leadership, and service teams in Looker.",
+    badge: "Looker"
+  }
+];
+
+const governanceCards = [
+  {
+    title: "Explainable by default",
+    copy:
+      "Every recommendation includes the evidence trail, confidence score, and the counterfactual if the city waits."
+  },
+  {
+    title: "Demo mode is honest",
+    copy:
+      "This build runs on local heuristics and mock data, so the workflow is demoable now and can be swapped to live Google services with keys later."
+  },
+  {
+    title: "ADK-ready orchestration",
+    copy:
+      "The agent trace is structured to map straight into a real ADK loop when the project moves from prototype to deployment."
+  }
+];
+
 function buildPath(values, width = 520, height = 180) {
   const padding = 18;
   const usableWidth = width - padding * 2;
@@ -173,6 +240,11 @@ function buildPath(values, width = 520, height = 180) {
 }
 
 function getFallbackPayload(scenario) {
+  const decision = buildDecisionEngine({
+    scenarioId: scenario.id,
+    question: scenario.questions.why
+  });
+
   return {
     ingest: {
       streams: scenario.feeds,
@@ -248,8 +320,29 @@ function getFallbackPayload(scenario) {
           detail: "Prepared alert and ticket automation."
         }
       ]
-    }
+    },
+    decision
   };
+}
+
+function Marquee() {
+  const duplicated = [...rollingCopy, ...rollingCopy];
+
+  return (
+    <div className="marquee border-b-[3px] border-black bg-[#f7f2e8]">
+      <div className="marquee-track gap-3 px-4 py-3 text-xs font-black uppercase tracking-[0.2em] text-ink-muted">
+        {duplicated.map((item, index) => (
+          <span
+            key={`${item}-${index}`}
+            className="inline-flex items-center gap-2 rounded-full border-[2px] border-black bg-white px-4 py-2 shadow-[4px_4px_0_0_#111]"
+          >
+            <span className="h-2 w-2 rounded-full bg-[#ff7d91]" />
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function CursorDot() {
@@ -399,6 +492,7 @@ export default function Page() {
   const activeRecommendation = active.recommendation ?? getFallbackPayload(scenario).recommendation;
   const activeAgent = active.agentRun ?? getFallbackPayload(scenario).agentRun;
   const activeIngest = active.ingest ?? getFallbackPayload(scenario).ingest;
+  const activeDecision = active.decision ?? getFallbackPayload(scenario).decision;
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -415,7 +509,7 @@ export default function Page() {
 
     async function load() {
       try {
-        const [ingestResponse, analysisResponse, recommendationResponse, agentResponse] =
+        const [ingestResponse, analysisResponse, recommendationResponse, agentResponse, decisionResponse] =
           await Promise.all([
             fetch(`/api/ingest?scenarioId=${scenario.id}`),
             fetch("/api/analyze", {
@@ -432,14 +526,16 @@ export default function Page() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ scenarioId: scenario.id })
-            })
+            }),
+            fetch(`/api/decision?scenarioId=${scenario.id}&question=${encodeURIComponent(prompt)}`)
           ]);
 
-        const [ingestJson, analysisJson, recommendationJson, agentJson] = await Promise.all([
+        const [ingestJson, analysisJson, recommendationJson, agentJson, decisionJson] = await Promise.all([
           ingestResponse.json(),
           analysisResponse.json(),
           recommendationResponse.json(),
-          agentResponse.json()
+          agentResponse.json(),
+          decisionResponse.json()
         ]);
 
         if (!cancelled) {
@@ -447,7 +543,8 @@ export default function Page() {
             ingest: ingestJson.batch,
             analysis: analysisJson.analysis,
             recommendation: recommendationJson.recommendation,
-            agentRun: agentJson.agentRun
+            agentRun: agentJson.agentRun,
+            decision: decisionJson.decision
           });
         }
       } catch {
@@ -475,6 +572,7 @@ export default function Page() {
   return (
     <div className="relative min-h-screen overflow-hidden cursor-none bg-[#f4efe6] text-ink">
       <CursorDot />
+      <Marquee />
 
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -left-20 top-10 h-72 w-72 rounded-full bg-[#a7f3d0] opacity-70 blur-3xl" />
@@ -482,8 +580,62 @@ export default function Page() {
         <div className="absolute bottom-20 left-1/3 h-72 w-72 rounded-full bg-[#8bd3ff] opacity-60 blur-3xl" />
       </div>
 
+      <div className="relative z-10 mx-auto grid max-w-[1600px] gap-6 px-4 pb-8 pt-4 lg:grid-cols-[300px_1fr] lg:px-6">
+        <aside className="hidden lg:block">
+          <div className="sticky top-6 space-y-4 rounded-[32px] border-[3px] border-black bg-white p-5 shadow-[12px_12px_0_0_#111]">
+            <div className="rounded-[24px] border-[3px] border-black bg-[#2f6bff] p-4 text-white shadow-[8px_8px_0_0_#111]">
+              <div className="text-xs font-bold uppercase tracking-[0.22em] text-white/75">
+                CyVix control room
+              </div>
+              <div className="mt-3 font-[family-name:var(--font-display)] text-3xl font-black tracking-[-0.06em]">
+                Civic decisions, not slideware.
+              </div>
+              <p className="mt-3 text-sm leading-6 text-white/80">
+                Local heuristics power the demo now. The API shape is ready for live Vertex,
+                Gemini, BigQuery, AlloyDB, and ADK integration when keys are connected.
+              </p>
+            </div>
+
+            <nav className="space-y-2">
+              {navLinks.map((link) => (
+                <a
+                  key={link.id}
+                  href={`#${link.id}`}
+                  className="flex items-center justify-between rounded-[18px] border-[3px] border-black bg-[#f7f2e8] px-4 py-3 text-sm font-semibold text-ink shadow-[6px_6px_0_0_#111] transition hover:-translate-y-0.5"
+                >
+                  <span>{link.label}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              ))}
+            </nav>
+
+            <div className="grid gap-3">
+              <div className="rounded-[20px] border-[3px] border-black bg-[#a7f3d0] p-4 shadow-[6px_6px_0_0_#111]">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-ink-muted">
+                  Engine mode
+                </p>
+                <p className="mt-2 text-lg font-black tracking-[-0.04em] text-ink">
+                  {activeDecision.engine.name}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-ink-soft">{activeDecision.engine.mode}</p>
+              </div>
+              <div className="rounded-[20px] border-[3px] border-black bg-white p-4 shadow-[6px_6px_0_0_#111]">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-ink-muted">
+                  Fusion score
+                </p>
+                <p className="mt-2 text-3xl font-black tracking-[-0.06em] text-ink">
+                  {activeDecision.score.fusion}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-ink-soft">
+                  Confidence {activeDecision.score.confidence}% and projected risk {activeDecision.score.projectedRisk}.
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
       <main className="relative z-10">
-        <section className="mx-auto max-w-7xl px-4 pb-10 pt-4 sm:px-6 lg:px-8">
+        <section id="overview" className="mx-auto max-w-7xl px-4 pb-10 pt-4 sm:px-6 lg:px-8">
           <motion.header
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -505,19 +657,12 @@ export default function Page() {
                 </div>
               </div>
 
-              <nav className="hidden items-center gap-6 text-sm font-semibold text-ink-soft md:flex">
-                <a href="#product" className="hover:text-ink">
-                  Product
-                </a>
-                <a href="#demo" className="hover:text-ink">
-                  Live demo
-                </a>
-                <a href="#stack" className="hover:text-ink">
-                  Google stack
-                </a>
-                <a href="#contact" className="hover:text-ink">
-                  Contact
-                </a>
+              <nav className="hidden items-center gap-5 text-sm font-semibold text-ink-soft md:flex">
+                {navLinks.slice(0, 4).map((link) => (
+                  <a key={link.id} href={`#${link.id}`} className="hover:text-ink">
+                    {link.label}
+                  </a>
+                ))}
               </nav>
 
               <MotionButton variant="secondary" className="hidden sm:inline-flex">
@@ -552,7 +697,7 @@ export default function Page() {
               </p>
 
               <div className="flex flex-wrap gap-3">
-                <MotionButton onClick={() => document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" })}>
+                <MotionButton onClick={() => document.getElementById("agent")?.scrollIntoView({ behavior: "smooth" })}>
                   Start the live demo
                   <ArrowRight className="h-4 w-4" />
                 </MotionButton>
@@ -681,7 +826,72 @@ export default function Page() {
           </div>
         </section>
 
-        <section id="product" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <section id="signals" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <SectionHeading
+            eyebrow="Signal fabric"
+            title="Everything the city knows, folded into one operational surface."
+            copy="This layer is where structured telemetry, unstructured resident language, and policy context start to behave like one dataset."
+          />
+
+          <div className="mt-8 grid gap-5 lg:grid-cols-[0.96fr_1.04fr]">
+            <div className="grid gap-5 sm:grid-cols-2">
+              {platformModules.map((module) => (
+                <motion.article
+                  key={module.title}
+                  whileHover={{ y: -4 }}
+                  transition={{ type: "spring", stiffness: 280, damping: 18 }}
+                  className="rounded-[28px] border-[3px] border-black bg-white p-5 shadow-[8px_8px_0_0_#111]"
+                >
+                  <div className="inline-flex rounded-full border-[3px] border-black bg-[#ffe98a] px-3 py-1 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#111]">
+                    {module.badge}
+                  </div>
+                  <h3 className="mt-4 font-[family-name:var(--font-display)] text-2xl tracking-[-0.04em] text-ink">
+                    {module.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-ink-soft">{module.copy}</p>
+                </motion.article>
+              ))}
+            </div>
+
+            <div className="grid gap-4">
+              <div className="rounded-[32px] border-[3px] border-black bg-[#f7f2e8] p-5 shadow-[12px_12px_0_0_#111]">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-ink-muted">
+                    Decision packet
+                  </p>
+                  <div className="rounded-full border-[3px] border-black bg-[#ff9fb0] px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-ink shadow-[4px_4px_0_0_#111]">
+                    {activeDecision.engine.name}
+                  </div>
+                </div>
+                <h3 className="mt-3 max-w-lg font-[family-name:var(--font-display)] text-4xl font-black tracking-[-0.06em] text-ink">
+                  {activeDecision.explanation}
+                </h3>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {[
+                    ["Fusion", `${activeDecision.score.fusion}%`],
+                    ["Confidence", `${activeDecision.score.confidence}%`],
+                    ["Projected risk", activeDecision.score.projectedRisk]
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-[22px] border-[3px] border-black bg-white p-4 shadow-[6px_6px_0_0_#111]">
+                      <p className="text-xs font-black uppercase tracking-[0.18em] text-ink-muted">{label}</p>
+                      <p className="mt-2 text-2xl font-black tracking-[-0.05em] text-ink">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[32px] border-[3px] border-black bg-[#8bd3ff] p-5 shadow-[12px_12px_0_0_#111]">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-ink-muted">
+                  Counterfactual
+                </p>
+                <p className="mt-2 text-xl font-black tracking-[-0.04em] text-ink">
+                  Delay {activeDecision.counterfactual.delayHours}h and {activeDecision.counterfactual.outcome}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="decision" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="How CyVix works"
             title="A decision engine wrapped in a calm, simple interface."
@@ -716,7 +926,7 @@ export default function Page() {
           </div>
         </section>
 
-        <section id="demo" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <section id="agent" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="Live decision loop"
             title="Switch the scenario and watch the system think."
@@ -982,6 +1192,36 @@ export default function Page() {
           </div>
         </section>
 
+        <section id="governance" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <SectionHeading
+            eyebrow="Governance"
+            title="Deep tech is visible, explainable, and safe to demo."
+            copy="The platform shows its work. That matters for judges, city teams, and anyone who wants to know why a recommendation was made."
+            align="center"
+          />
+
+          <div className="mt-8 grid gap-5 lg:grid-cols-3">
+            {governanceCards.map((item, index) => (
+              <motion.article
+                key={item.title}
+                whileHover={{ y: -4, rotate: index % 2 === 0 ? -0.6 : 0.6 }}
+                transition={{ type: "spring", stiffness: 280, damping: 18 }}
+                className={`rounded-[30px] border-[3px] border-black p-6 shadow-[10px_10px_0_0_#111] ${
+                  index === 0 ? "bg-[#ffe98a]" : index === 1 ? "bg-[#a7f3d0]" : "bg-[#ff9fb0]"
+                }`}
+              >
+                <div className="inline-flex rounded-full border-[3px] border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#111]">
+                  {index === 0 ? "Trace" : index === 1 ? "Demo mode" : "ADK"}
+                </div>
+                <h3 className="mt-4 font-[family-name:var(--font-display)] text-3xl font-black tracking-[-0.05em] text-ink">
+                  {item.title}
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-ink-soft">{item.copy}</p>
+              </motion.article>
+            ))}
+          </div>
+        </section>
+
         <section
           id="contact"
           className="mx-auto max-w-7xl px-4 py-12 pb-20 sm:px-6 lg:px-8"
@@ -1036,6 +1276,7 @@ export default function Page() {
           </footer>
         </section>
       </main>
+      </div>
     </div>
   );
 }
