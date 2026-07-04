@@ -1,9 +1,9 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "AetherPulse | Decision Intelligence Platform",
+  title: "CyVix | Civic Decision Intelligence",
   description:
-    "An AI-powered city decision intelligence platform with mock ingestion, anomaly detection, retrieval, and automated recommendations."
+    "CyVix turns city telemetry, citizen feedback, and AI reasoning into a live decision layer for public service teams."
 };
 
 export default function RootLayout({ children }) {
