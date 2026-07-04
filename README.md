@@ -153,6 +153,7 @@ Why it stands out:
 - Natural-language query box
 - Rolling agent trace and tool-call view
 - Google Cloud service mapping
+- Looker-style embed shell with filters and drill-down tabs
 - Signal fabric and baseline scoring
 - Similar incident retrieval
 - Civic explanation generation
@@ -452,5 +453,5 @@ kubectl -n cyvix rollout status deployment/cyvix
 - Ask a natural-language question to trigger the decision engine.
 - Use the sidebar to jump between product sections.
 - Show the agent trace, tool calls, and counterfactual to explain how the system works.
-- Use the Looker-style panel to show operational status and the demo initializer.
+- Use the Looker-style panel to show operational status, faux filters, and drill-down tabs.
 - Point to the Google Cloud mapping to demonstrate that the solution is grounded in real platform primitives.
