@@ -20,6 +20,15 @@ The solution maps directly to the Google Cloud ecosystem:
 
 The current build is fully demoable with local mock data and deterministic decision logic. It does not require live Google keys to run locally, but the code and documentation are structured so those services can be swapped in cleanly.
 
+If you add provider keys in `.env.local`, the app will enrich the civic summaries with live LLM output:
+
+- `GROQ_API_KEY`
+- `GROQ_MODEL`
+- `NVIDIA_NIM_API_KEY`
+- `NVIDIA_NIM_BASE_URL`
+- `NVIDIA_NIM_MODEL`
+- `GOOGLE_CLOUD_PROJECT`
+
 ## 2. Real-World Problem And Practical Impact
 
 Modern communities generate data from transit, utilities, weather, wellness signals, citizen feedback, and service logs. The hard part is not collecting data. The hard part is turning it into a decision that a city team can trust quickly.
@@ -260,6 +269,11 @@ The current submission does not depend on NVIDIA services. The architecture is c
 
 The current demo works without keys. For live Google Cloud integration, wire the following through environment variables or secret managers:
 
+- `GROQ_API_KEY`
+- `GROQ_MODEL`
+- `NVIDIA_NIM_API_KEY`
+- `NVIDIA_NIM_BASE_URL`
+- `NVIDIA_NIM_MODEL`
 - `GOOGLE_APPLICATION_CREDENTIALS`
 - `GCP_PROJECT_ID`
 - `GCP_REGION`
@@ -299,4 +313,3 @@ http://localhost:3000
 - Use the sidebar to jump between product sections.
 - Show the agent trace, tool calls, and counterfactual to explain how the system works.
 - Point to the Google Cloud mapping to demonstrate that the solution is grounded in real platform primitives.
-

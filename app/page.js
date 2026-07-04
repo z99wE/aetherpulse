@@ -493,6 +493,7 @@ export default function Page() {
   const activeAgent = active.agentRun ?? getFallbackPayload(scenario).agentRun;
   const activeIngest = active.ingest ?? getFallbackPayload(scenario).ingest;
   const activeDecision = active.decision ?? getFallbackPayload(scenario).decision;
+  const activeProvider = active.provider ?? { source: "local", providerStatus: {} };
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -544,7 +545,8 @@ export default function Page() {
             analysis: analysisJson.analysis,
             recommendation: recommendationJson.recommendation,
             agentRun: agentJson.agentRun,
-            decision: decisionJson.decision
+            decision: decisionJson.decision,
+            provider: analysisJson.provider
           });
         }
       } catch {
@@ -628,6 +630,21 @@ export default function Page() {
                 </p>
                 <p className="mt-1 text-sm leading-6 text-ink-soft">
                   Confidence {activeDecision.score.confidence}% and projected risk {activeDecision.score.projectedRisk}.
+                </p>
+              </div>
+              <div className="rounded-[20px] border-[3px] border-black bg-[#ffe98a] p-4 shadow-[6px_6px_0_0_#111]">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-ink-muted">
+                  Provider
+                </p>
+                <p className="mt-2 text-lg font-black tracking-[-0.04em] text-ink">
+                  {activeProvider.source.toUpperCase()}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-ink-soft">
+                  {activeProvider.providerStatus?.groq
+                    ? "Groq is connected for narrative enrichment."
+                    : activeProvider.providerStatus?.nim
+                      ? "NVIDIA NIM is connected for narrative enrichment."
+                      : "Local fallback is active."}
                 </p>
               </div>
             </div>
