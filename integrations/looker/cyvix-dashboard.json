@@ -1,0 +1,29 @@
+{
+  "name": "CyVix Civic Operations Review",
+  "description": "Looker-style leadership surface for civic risk, response windows, and cross-ward comparisons.",
+  "embedUrl": "${LOOKER_EMBED_URL}",
+  "dashboardUrl": "${LOOKER_DASHBOARD_URL}",
+  "defaultFilters": {
+    "ward_group": "Priority wards",
+    "signal_type": "Transit + service",
+    "time_grain": "Week over week"
+  },
+  "tiles": [
+    {
+      "title": "Executive snapshot",
+      "type": "kpi",
+      "metrics": ["risk_score", "confidence", "response_window"]
+    },
+    {
+      "title": "Trend over time",
+      "type": "timeseries",
+      "metrics": ["risk_score", "complaint_velocity", "service_delay"]
+    },
+    {
+      "title": "Ward comparison",
+      "type": "comparison",
+      "compareBy": "ward"
+    }
+  ]
+}
+

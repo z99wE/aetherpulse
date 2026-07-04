@@ -12,9 +12,6 @@ import {
   BarChart3,
   Bot,
   Cloud,
-  CloudCog,
-  Database,
-  ExternalLink,
   Layers3,
   LineChart,
   MapPinned,
@@ -27,7 +24,9 @@ import {
   Zap
 } from "lucide-react";
 import { buildDecisionEngine } from "@/lib/decision-engine";
-import { googleStack, scenarios } from "@/lib/mock-data";
+import { scenarios } from "@/lib/mock-data";
+import { LookerWorkspace } from "@/components/looker-workspace";
+import { AuthPanel } from "@/components/auth-panel";
 
 const heroMetrics = [
   { value: "24.8k", label: "signals analyzed / day" },
@@ -47,13 +46,13 @@ const pillars = [
     icon: Sparkles,
     title: "Reason with AI",
     copy:
-      "Vertex AI and Gemini turn raw spikes into clear causes, forecasts, and recommended moves."
+      "The model turns raw spikes into clear causes, forecasts, and recommended moves."
   },
   {
     icon: Workflow,
     title: "Act automatically",
     copy:
-      "Cloud Run, Cloud Functions, and ADK can dispatch alerts, create tickets, and schedule follow-ups."
+      "The app can dispatch alerts, create tickets, and schedule follow-ups."
   },
   {
     icon: ShieldCheck,
@@ -65,58 +64,46 @@ const pillars = [
 
 const serviceCards = [
   {
-    name: "Vertex AI",
-    copy: "Predictive scoring, anomaly detection, and outcome ranking for city operations.",
-    icon: Sparkles,
+    name: "Signal intake",
+    copy: "Pulls feeds, citizen notes, and service logs into one working view.",
+    icon: Radar,
     color: "bg-[#8bd3ff]"
   },
   {
-    name: "Gemini",
-    copy: "Natural-language answers, civic summaries, and plain-English incident briefings.",
-    icon: MessageSquareMore,
+    name: "Risk scoring",
+    copy: "Ranks what is most urgent, what is probably next, and what needs attention now.",
+    icon: Sparkles,
     color: "bg-[#ffe38a]"
   },
   {
-    name: "BigQuery",
-    copy: "Stores the city’s historical baseline so trends, seasonality, and drift are measurable.",
-    icon: BarChart3,
+    name: "City memory",
+    copy: "Keeps prior incidents, seasonality, and playbooks available for comparison.",
+    icon: Layers3,
     color: "bg-[#a7f3d0]"
   },
   {
-    name: "Cloud Run",
-    copy: "Scalable inference and the public app shell, served fast and reliably.",
-    icon: Cloud,
+    name: "Action routing",
+    copy: "Turns a recommendation into a task, alert, or follow-up without extra clicks.",
+    icon: Zap,
     color: "bg-[#ff9fb0]"
   },
   {
-    name: "Agent Development Kit",
-    copy: "Orchestrates the observe → reason → retrieve → act loop.",
-    icon: Bot,
+    name: "Narrative layer",
+    copy: "Turns raw output into a clear answer anyone on the team can read quickly.",
+    icon: MessageSquareMore,
     color: "bg-[#c4b5fd]"
   },
   {
-    name: "AlloyDB",
-    copy: "Incident memory and similarity search for finding the right response playbook.",
-    icon: Layers3,
+    name: "Ops dashboard",
+    copy: "Packages the status view, trends, and deltas for decision makers.",
+    icon: LineChart,
     color: "bg-[#ffd37a]"
   },
   {
-    name: "Cloud Functions",
-    copy: "Event-driven workflows for notifications, escalation, and city service automation.",
-    icon: Zap,
-    color: "bg-[#9ee7ff]"
-  },
-  {
-    name: "Looker",
-    copy: "Executive-ready dashboards that keep leaders aligned on what changed and why.",
-    icon: LineChart,
-    color: "bg-[#b8f2c7]"
-  },
-  {
-    name: "Google Kubernetes Engine",
-    copy: "Containerized deployment path for teams that want a managed cluster behind the app.",
+    name: "Deployment path",
+    copy: "Keeps the app container-ready for whichever cloud target the team chooses.",
     icon: ServerCog,
-    color: "bg-[#b1d9ff]"
+    color: "bg-[#9ee7ff]"
   }
 ];
 
@@ -140,28 +127,28 @@ const useCases = [
 
 const liveNarrative = [
   {
-    title: "Observe",
-    service: "BigQuery",
-    copy: "Ingests transit, utility, weather, and citizen feedback into one baseline."
+    title: "Collect",
+    service: "Signal layer",
+    copy: "Pulls transit, utility, weather, and service feedback into one baseline."
   },
   {
-    title: "Reason",
-    service: "Vertex AI",
+    title: "Score",
+    service: "Risk model",
     copy: "Scores the anomaly, estimates impact, and surfaces the likely failure window."
   },
   {
-    title: "Retrieve",
-    service: "AlloyDB",
-    copy: "Pulls similar incidents and the most relevant playbook from city memory."
+    title: "Compare",
+    service: "Memory layer",
+    copy: "Pulls similar incidents and the most relevant playbook from prior cases."
   },
   {
     title: "Explain",
-    service: "Gemini",
+    service: "Narrative layer",
     copy: "Writes a concise civic summary and a technical trace side by side."
   },
   {
     title: "Act",
-    service: "Cloud Run + Functions",
+    service: "Workflow engine",
     copy: "Triggers notifications, tickets, and follow-up checks without losing context."
   }
 ];
@@ -171,46 +158,45 @@ const navLinks = [
   { id: "signals", label: "Signal fabric" },
   { id: "decision", label: "Decision engine" },
   { id: "agent", label: "Agent trace" },
-  { id: "stack", label: "Google stack" },
+  { id: "stack", label: "Platform" },
   { id: "governance", label: "Governance" },
   { id: "contact", label: "Contact" }
 ];
 
 const rollingCopy = [
-  "BigQuery keeps the city baseline current",
-  "Vertex AI ranks risk and predicts what happens next",
-  "Gemini turns model output into civic language",
-  "AlloyDB retrieves similar incidents and playbooks",
-  "Cloud Run serves the app and decision API",
-  "Cloud Functions trigger alerts and follow-ups",
-  "Looker surfaces leadership context",
-  "ADK orchestrates observe, reason, retrieve, act"
+  "Turn scattered city signals into one clear action",
+  "See what changed before it becomes a service issue",
+  "Catch risk early, route the next step, and keep teams aligned",
+  "Make public operations feel faster, calmer, and easier to trust",
+  "Give every team a clean view of what to do now",
+  "Move from complaint to action without losing context",
+  "Keep daily civic work readable, explainable, and on time"
 ];
 
 const platformModules = [
   {
-    title: "Signal fabric",
+    title: "Signal intake",
     copy:
       "Blend telemetry, citizen text, and environmental context into one baseline before scoring risk.",
-    badge: "BigQuery"
+    badge: "Data"
   },
   {
-    title: "Decision graph",
+    title: "Decision model",
     copy:
       "Fuse evidence, compare it to historical incidents, and rank the safest next action.",
-    badge: "Vertex AI"
+    badge: "Scoring"
   },
   {
     title: "Automation relay",
     copy:
-      "Route recommendations into Cloud Run and Cloud Functions so the city can act without waiting on a handoff.",
-    badge: "Cloud Run"
+      "Route recommendations into a task stream so the city can act without waiting on a handoff.",
+    badge: "Actions"
   },
   {
     title: "Executive lens",
     copy:
-      "Package the same decision packet for operators, leadership, and service teams in Looker.",
-    badge: "Looker"
+      "Package the same decision packet for operators, leadership, and service teams in one place.",
+    badge: "Reports"
   }
 ];
 
@@ -236,12 +222,12 @@ const governanceCards = [
   {
     title: "Demo mode is honest",
     copy:
-      "This build runs on local heuristics and mock data, so the workflow is demoable now and can be swapped to live Google services with keys later."
+      "This build runs on local heuristics and mock data, so the workflow is demoable now and can be swapped to live services later."
   },
   {
-    title: "ADK-ready orchestration",
+    title: "Orchestration-ready",
     copy:
-      "The agent trace is structured to map straight into a real ADK loop when the project moves from prototype to deployment."
+      "The agent trace is structured to map straight into a real orchestration loop when the project moves from prototype to deployment."
   }
 ];
 
@@ -306,7 +292,7 @@ function getFallbackPayload(scenario) {
       actions: scenario.workflow
     },
     agentRun: {
-      framework: "Google ADK",
+      framework: "Orchestration",
       objective: `Resolve ${scenario.ward} service risk`,
       state: "execute",
       confidence: Math.round(scenario.confidence * 100),
@@ -317,27 +303,27 @@ function getFallbackPayload(scenario) {
       })),
       toolCalls: [
         {
-          service: "BigQuery",
+          service: "Data layer",
           action: "Query baseline",
           detail: "Pulled ward-level trend history and seasonal variance."
         },
         {
-          service: "Vertex AI",
+          service: "Scoring model",
           action: "Score anomaly",
           detail: "Estimated risk based on combined telemetry and public feedback."
         },
         {
-          service: "Gemini",
+          service: "Narrative layer",
           action: "Draft explanation",
           detail: "Turned the result into a civic-ready response."
         },
         {
-          service: "AlloyDB",
+          service: "Memory layer",
           action: "Retrieve playbook",
           detail: "Matched the pattern to similar incidents and response notes."
         },
         {
-          service: "Cloud Functions",
+          service: "Workflow engine",
           action: "Trigger workflow",
           detail: "Prepared alert and ticket automation."
         }
@@ -508,14 +494,32 @@ function ScenarioCard({ scenario, active, onClick }) {
 export default function Page() {
   const [activeScenarioIndex, setActiveScenarioIndex] = useState(0);
   const [autoRotate, setAutoRotate] = useState(true);
+  const [workspaceMode, setWorkspaceMode] = useState("overview");
   const [queryDraft, setQueryDraft] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
+  const [activityLog, setActivityLog] = useState([
+    { title: "Session ready", detail: "Demo data loaded and the workspace is interactive." }
+  ]);
   const [payload, setPayload] = useState(() => getFallbackPayload(scenarios[0]));
   const [platformStatus, setPlatformStatus] = useState(null);
   const [demoInitState, setDemoInitState] = useState({
     loading: false,
     result: null
   });
+  const [authState, setAuthState] = useState({
+    loading: true,
+    enabled: false,
+    required: false,
+    signedIn: false,
+    session: null
+  });
+  const [authForm, setAuthForm] = useState({
+    name: "",
+    email: "",
+    code: ""
+  });
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authMessage, setAuthMessage] = useState("Session data is loading.");
   const [lookerTab, setLookerTab] = useState("summary");
   const [comparisonWard, setComparisonWard] = useState(scenarios[1].ward);
 
@@ -622,22 +626,71 @@ export default function Page() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAuthState() {
+      try {
+        const response = await fetch("/api/auth/me");
+        const json = await response.json();
+        if (!cancelled) {
+          const auth = json.auth ?? {};
+          setAuthState({
+            loading: false,
+            enabled: Boolean(auth.enabled),
+            required: Boolean(auth.required),
+            signedIn: Boolean(auth.signedIn),
+            session: auth.session ?? null
+          });
+          setAuthMessage(
+            auth.signedIn
+              ? `Signed in as ${auth.session?.name ?? "Analyst"}`
+              : auth.enabled
+                ? "Create a signed session to protect the live routes."
+                : "Authentication is not enabled in this environment yet."
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setAuthState({
+            loading: false,
+            enabled: false,
+            required: false,
+            signedIn: false,
+            session: null
+          });
+          setAuthMessage("Authentication status could not be loaded.");
+        }
+      }
+    }
+
+    loadAuthState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function handleQuestion(e) {
     e.preventDefault();
     const trimmed = queryDraft.trim();
     setSubmittedQuery(trimmed);
     if (trimmed) {
       setAutoRotate(false);
+      setWorkspaceMode("live");
+      recordAction("Question submitted", trimmed);
     }
   }
 
   async function handleDemoInit() {
     setDemoInitState({ loading: true, result: null });
+    setWorkspaceMode("deploy");
 
     try {
       const response = await fetch("/api/demo", { method: "POST" });
       const json = await response.json();
       setDemoInitState({ loading: false, result: json.result ?? json });
+      recordAction("Demo bundle initialized", "Baseline rows and manifest were prepared.");
     } catch {
       setDemoInitState({
         loading: false,
@@ -647,6 +700,7 @@ export default function Page() {
           storage: { connected: false, source: "local-fallback" }
         }
       });
+      recordAction("Demo bundle fallback", "Demo data stayed local because a cloud path was unavailable.");
     }
   }
 
@@ -733,6 +787,81 @@ export default function Page() {
     }
   ];
 
+  function recordAction(title, detail) {
+    setActivityLog((current) => [{ title, detail }, ...current].slice(0, 4));
+  }
+
+  async function refreshAuthState() {
+    try {
+      const response = await fetch("/api/auth/me");
+      const json = await response.json();
+      const auth = json.auth ?? {};
+      setAuthState({
+        loading: false,
+        enabled: Boolean(auth.enabled),
+        required: Boolean(auth.required),
+        signedIn: Boolean(auth.signedIn),
+        session: auth.session ?? null
+      });
+      setAuthMessage(
+        auth.signedIn
+          ? `Signed in as ${auth.session?.name ?? "Analyst"}`
+          : auth.enabled
+            ? "Create a signed session to protect the live routes."
+            : "Authentication is not enabled in this environment yet."
+      );
+    } catch {
+      setAuthMessage("Authentication status could not be refreshed.");
+    }
+  }
+
+  async function handleAuthSubmit(event) {
+    event.preventDefault();
+    setAuthBusy(true);
+    setAuthMessage("Creating your session...");
+
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(authForm)
+      });
+      const json = await response.json();
+
+      if (!response.ok) {
+        throw new Error(json?.error || "Could not create session");
+      }
+
+      setAuthForm((current) => ({ ...current, code: "" }));
+      recordAction("Session created", `${json.session?.name ?? "Analyst"} is now signed in.`);
+      await refreshAuthState();
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : "Could not create session.");
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function handleLogout() {
+    setAuthBusy(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setAuthState({
+        loading: false,
+        enabled: authState.enabled,
+        required: authState.required,
+        signedIn: false,
+        session: null
+      });
+      setAuthMessage("Signed out.");
+      recordAction("Session ended", "The signed cookie was cleared.");
+    } catch {
+      setAuthMessage("Could not sign out.");
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden cursor-none bg-[#f4efe6] text-ink">
       <CursorDot />
@@ -755,8 +884,8 @@ export default function Page() {
                 Civic decisions, not slideware.
               </div>
               <p className="mt-3 text-sm leading-6 text-white/80">
-                Local heuristics power the demo now. The API shape is ready for live Vertex,
-                Gemini, BigQuery, AlloyDB, and ADK integration when keys are connected.
+                Local heuristics power the demo now. The app is ready to connect to live cloud
+                services when the team configures them.
               </p>
             </div>
 
@@ -779,7 +908,7 @@ export default function Page() {
                   Engine mode
                 </p>
                 <p className="mt-2 text-lg font-black tracking-[-0.04em] text-ink">
-                  {activeDecision.engine.name}
+                  Decision engine
                 </p>
                 <p className="mt-1 text-sm leading-6 text-ink-soft">{activeDecision.engine.mode}</p>
               </div>
@@ -802,10 +931,15 @@ export default function Page() {
                   {activeProvider.source.toUpperCase()}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-ink-soft">
+                  {activeProvider.providerStatus?.gemini
+                    ? "Gemini is connected for narrative enrichment."
+                    : null}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-ink-soft">
                   {activeProvider.providerStatus?.groq
-                    ? "Groq is connected for narrative enrichment."
+                    ? "Narrative enrichment is connected."
                   : activeProvider.providerStatus?.nim
-                    ? "NVIDIA NIM is connected for narrative enrichment."
+                    ? "Narrative enrichment is connected."
                     : "Local fallback is active."}
                 </p>
               </div>
@@ -814,14 +948,25 @@ export default function Page() {
                   Cloud data plane
                 </p>
                 <p className="mt-2 text-lg font-black tracking-[-0.04em] text-ink">
-                  {activeGcp.bigquery?.connected ? "BigQuery live" : "BigQuery fallback"}
+                  {activeGcp.bigquery?.connected ? "Data plane live" : "Data plane fallback"}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-ink-soft">
                   {activeStorage.connected
-                    ? `Cloud Storage writes to ${activeStorage.bucket}.`
-                    : "Cloud Storage stays local until a bucket is configured."}
+                    ? `Storage writes to ${activeStorage.bucket}.`
+                    : "Storage stays local until a bucket is configured."}
                 </p>
               </div>
+
+              <AuthPanel
+                authState={authState}
+                authForm={authForm}
+                setAuthForm={setAuthForm}
+                authBusy={authBusy}
+                authMessage={authMessage}
+                onSubmit={handleAuthSubmit}
+                onLogout={handleLogout}
+                onRefresh={refreshAuthState}
+              />
             </div>
           </div>
         </aside>
@@ -857,7 +1002,16 @@ export default function Page() {
                 ))}
               </nav>
 
-              <MotionButton variant="secondary" className="hidden sm:inline-flex">
+              <MotionButton
+                variant="secondary"
+                className="hidden sm:inline-flex"
+                onClick={() => {
+                  setWorkspaceMode("live");
+                  setAutoRotate(false);
+                  setActiveScenarioIndex((current) => (current + 1) % scenarios.length);
+                  recordAction("Live demo opened", "A fresh scenario loaded into the workspace.");
+                }}
+              >
                 Request demo
                 <ArrowRight className="h-4 w-4" />
               </MotionButton>
@@ -889,17 +1043,66 @@ export default function Page() {
               </p>
 
               <div className="flex flex-wrap gap-3">
-                <MotionButton onClick={() => document.getElementById("agent")?.scrollIntoView({ behavior: "smooth" })}>
+                <MotionButton
+                  onClick={() => {
+                    setWorkspaceMode("live");
+                    setAutoRotate(false);
+                    document.getElementById("agent")?.scrollIntoView({ behavior: "smooth" });
+                    recordAction("Live analysis started", "The workspace is now focused on the active ward.");
+                  }}
+                >
                   Start the live demo
                   <ArrowRight className="h-4 w-4" />
                 </MotionButton>
                 <MotionButton
                   variant="secondary"
-                  onClick={() => document.getElementById("stack")?.scrollIntoView({ behavior: "smooth" })}
+                  onClick={() => {
+                    setWorkspaceMode("ops");
+                    document.getElementById("stack")?.scrollIntoView({ behavior: "smooth" });
+                    recordAction("Operations view opened", "The workspace shifted to system and deployment details.");
+                  }}
                 >
-                  Explore the stack
+                  Open operations
                 </MotionButton>
               </div>
+
+              <div className="rounded-[28px] border-[3px] border-black bg-white p-3 shadow-[8px_8px_0_0_#111]">
+              <div className="flex flex-wrap gap-2">
+                {[
+                  ["overview", "Overview"],
+                  ["live", "Live run"],
+                  ["ops", "Operations"],
+                    ["deploy", "Deploy"]
+                  ].map(([mode, label]) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => {
+                        setWorkspaceMode(mode);
+                        recordAction(`${label} mode`, "The workspace view changed.");
+                      }}
+                      className={`rounded-full border-[3px] border-black px-4 py-2 text-xs font-black uppercase tracking-[0.16em] shadow-[4px_4px_0_0_#111] ${
+                        workspaceMode === mode ? "bg-[#2f6bff] text-white" : "bg-[#f7f2e8] text-ink"
+                      }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="lg:hidden">
+              <AuthPanel
+                authState={authState}
+                authForm={authForm}
+                setAuthForm={setAuthForm}
+                authBusy={authBusy}
+                authMessage={authMessage}
+                onSubmit={handleAuthSubmit}
+                onLogout={handleLogout}
+                onRefresh={refreshAuthState}
+              />
+            </div>
 
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {heroMetrics.map((metric) => (
@@ -967,10 +1170,138 @@ export default function Page() {
                         </p>
                       </div>
                       <div className="rounded-full border-[3px] border-black bg-[#ffe98a] px-3 py-1 text-xs font-black uppercase shadow-[4px_4px_0_0_#111]">
-                        Vertex AI
+                        Forecast view
                       </div>
                     </div>
                     <Sparkline values={scenario.chart} />
+                  </div>
+
+                  <div className="rounded-[24px] border-[3px] border-black bg-[#0e1b2b] p-4 text-white shadow-[8px_8px_0_0_#111]">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-white/55">
+                          Workspace mode
+                        </p>
+                        <h4 className="mt-1 font-[family-name:var(--font-display)] text-2xl font-black tracking-[-0.05em]">
+                          {workspaceMode === "overview"
+                            ? "Overview"
+                            : workspaceMode === "live"
+                              ? "Live run"
+                              : workspaceMode === "ops"
+                                ? "Operations"
+                                : "Deploy"}
+                        </h4>
+                      </div>
+                      <span className="rounded-full border-[3px] border-white/20 bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em]">
+                        {scenario.tag}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                      {workspaceMode === "overview" ? (
+                        <>
+                          <div className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3">
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                              Summary
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-white/82">
+                              {scenario.summary}
+                            </p>
+                          </div>
+                          <div className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3">
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                              Response
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-white/82">
+                              {scenario.action}
+                            </p>
+                          </div>
+                          <div className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3">
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                              Status
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-white/82">
+                              One tap moves from signal to action.
+                            </p>
+                          </div>
+                        </>
+                      ) : null}
+
+                      {workspaceMode === "live" ? (
+                        <>
+                          <div className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3 sm:col-span-2">
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                              Latest question
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-white/82">
+                              {submittedQuery || scenario.questions.why}
+                            </p>
+                          </div>
+                          <div className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3">
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                              Confidence
+                            </p>
+                            <p className="mt-2 text-2xl font-black">{Math.round(scenario.confidence * 100)}%</p>
+                          </div>
+                          <div className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3 sm:col-span-3">
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                              What changes now
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-white/82">
+                              A new scenario, a fresh answer, and an updated recommendation are ready when you switch.
+                            </p>
+                          </div>
+                        </>
+                      ) : null}
+
+                      {workspaceMode === "ops" ? (
+                        <div className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3 sm:col-span-3">
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                            Recent activity
+                          </p>
+                          <div className="mt-2 space-y-2">
+                            {activityLog.map((item) => (
+                              <div
+                                key={`${item.title}-${item.detail}`}
+                                className="rounded-[14px] border-[1px] border-white/10 bg-white/5 p-3"
+                              >
+                                <p className="text-sm font-black text-white">{item.title}</p>
+                                <p className="mt-1 text-xs leading-5 text-white/70">{item.detail}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {workspaceMode === "deploy" ? (
+                        <>
+                          <div className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3">
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                              Deploy
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-white/82">
+                              Ready to package, publish, and verify.
+                            </p>
+                          </div>
+                          <div className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3">
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                              Demo data
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-white/82">
+                              {demoInitState.loading ? "Preparing..." : demoInitState.result ? "Initialized" : "Not started"}
+                            </p>
+                          </div>
+                          <div className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3">
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                              Status
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-white/82">
+                              The deployment path is ready in the repo and live on the web.
+                            </p>
+                          </div>
+                        </>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-3">
@@ -995,25 +1326,25 @@ export default function Page() {
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[24px] border-[3px] border-black bg-[#2f6bff] p-4 text-white shadow-[8px_8px_0_0_#111]">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">
-                      Recommendation
-                    </p>
-                    <h4 className="mt-2 font-[family-name:var(--font-display)] text-2xl font-black tracking-[-0.05em]">
-                      {scenario.action}
-                    </h4>
-                  </div>
-                  <div className="rounded-[24px] border-[3px] border-black bg-white p-4 shadow-[8px_8px_0_0_#111]">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-ink-faint">
-                      Why now
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-ink-soft">
+                    <div className="rounded-[24px] border-[3px] border-black bg-[#2f6bff] p-4 text-white shadow-[8px_8px_0_0_#111]">
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">
+                        Recommendation
+                      </p>
+                      <h4 className="mt-2 font-[family-name:var(--font-display)] text-2xl font-black tracking-[-0.05em]">
+                        {scenario.action}
+                      </h4>
+                    </div>
+                    <div className="rounded-[24px] border-[3px] border-black bg-white p-4 shadow-[8px_8px_0_0_#111]">
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-ink-faint">
+                        Why now
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-ink-soft">
                       Service delay, complaint velocity, and weather are compounding inside the same
-                      ward. CyVix catches the pattern before it becomes a citywide escalation.
-                    </p>
+                      ward. CyVix catches the pattern before it becomes a citywide issue.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
             </motion.div>
           </div>
         </section>
@@ -1140,6 +1471,8 @@ export default function Page() {
                   onClick={() => {
                     setActiveScenarioIndex(index);
                     setAutoRotate(false);
+                    setWorkspaceMode("live");
+                    recordAction("Scenario changed", item.title);
                   }}
                 />
               ))}
@@ -1168,11 +1501,13 @@ export default function Page() {
                     <button
                       key={prompt}
                       type="button"
-                      onClick={() => {
-                        setQueryDraft(prompt);
-                        setSubmittedQuery(prompt);
-                        setAutoRotate(false);
-                      }}
+                    onClick={() => {
+                      setQueryDraft(prompt);
+                      setSubmittedQuery(prompt);
+                      setAutoRotate(false);
+                      setWorkspaceMode("live");
+                      recordAction("Prompt loaded", prompt);
+                    }}
                       className="rounded-full border-[3px] border-black bg-[#ffe98a] px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-ink shadow-[4px_4px_0_0_#111]"
                     >
                       {prompt}
@@ -1198,7 +1533,7 @@ export default function Page() {
                   </h3>
                 </div>
                 <div className="rounded-full border-[3px] border-black bg-[#a7f3d0] px-4 py-2 text-sm font-black shadow-[5px_5px_0_0_#111]">
-                  ADK loop
+                  Orchestration loop
                 </div>
               </div>
 
@@ -1237,6 +1572,19 @@ export default function Page() {
                     <p className="mt-2 text-base leading-7">
                       {activeAnalysis.answer}
                     </p>
+                    {activeAnalysis.providerNarrative ? (
+                      <div className="mt-4 rounded-[18px] border-[2px] border-white/20 bg-white/10 p-3">
+                        <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
+                          Live model reply
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-white/90">
+                          {activeAnalysis.providerNarrative}
+                        </p>
+                        <p className="mt-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/70">
+                          Source: {activeAnalysis.providerSource?.toUpperCase?.() ?? "MODEL"}
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="rounded-[24px] border-[3px] border-black bg-[#ffe98a] p-4 shadow-[8px_8px_0_0_#111]">
@@ -1294,7 +1642,7 @@ export default function Page() {
                     ["Stream", activeIngest.streams?.length ?? 0],
                     ["Signals", activeIngest.signalVector?.length ?? 0],
                     ["Confidence", `${Math.round(scenario.confidence * 100)}%`],
-                    ["Framework", activeAgent.framework]
+                    ["Framework", "Orchestration"]
                   ].map(([label, value]) => (
                     <span
                       key={label}
@@ -1311,9 +1659,9 @@ export default function Page() {
 
         <section id="stack" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <SectionHeading
-            eyebrow="Built on Google Cloud"
-            title="Every layer maps to a product-grade Google service."
-            copy="CyVix is not a slide deck stack. It is a real workflow architecture built around the tools teams already trust."
+            eyebrow="Platform"
+            title="Signals, scoring, routing, and reporting in one flow."
+            copy="CyVix is a working operations app, not a slide deck. The controls let you move from signal to decision without losing context."
           />
 
           <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
@@ -1323,492 +1671,27 @@ export default function Page() {
           </div>
 
           <div className="mt-8 grid gap-5 lg:grid-cols-[0.58fr_0.42fr]">
-            <motion.article
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.25 }}
-              className="rounded-[32px] border-[3px] border-black bg-[#f7f2e8] p-5 shadow-[12px_12px_0_0_#111] sm:p-6"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-ink-muted">
-                    Looker-style embed
-                  </p>
-                  <h3 className="mt-2 font-[family-name:var(--font-display)] text-4xl font-black tracking-[-0.06em] text-ink">
-                    {lookerStatus.title}
-                  </h3>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-soft">
-                    {lookerStatus.live
-                      ? "Connected to a live dashboard URL and surfaced in the same product shell."
-                      : "A production-style embed shell keeps the leadership view concrete even before a live Looker embed is configured."}
-                  </p>
-                </div>
-                <div
-                  className={`rounded-full border-[3px] border-black px-4 py-2 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#111] ${
-                    lookerStatus.live ? "bg-[#a7f3d0] text-ink" : "bg-[#ffe98a] text-ink"
-                  }`}
-                >
-                  {lookerStatus.status === "connected" ? "Connected" : "Preview"}
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {[
-                  { label: "Dashboard", value: lookerStatus.title },
-                  { label: "Embed", value: lookerStatus.live ? "Live URL" : "Shell preview" },
-                  { label: "Data plane", value: platformLive.bigquery ? "BigQuery live" : "BigQuery ready" }
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-[22px] border-[3px] border-black bg-white p-4 shadow-[6px_6px_0_0_#111]"
-                  >
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-ink-muted">
-                      {item.label}
-                    </p>
-                    <p className="mt-2 text-sm font-black tracking-[-0.03em] text-ink">
-                      {item.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 rounded-[28px] border-[3px] border-black bg-white p-4 shadow-[8px_8px_0_0_#111]">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-ink-faint">
-                      Operational frame
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-ink-soft">
-                      Ward-level summaries, trend deltas, and a current decision packet.
-                    </p>
-                  </div>
-                  <MotionButton
-                    variant="secondary"
-                    className="px-4 py-2 text-xs"
-                    onClick={handleDemoInit}
-                    disabled={demoInitState.loading}
-                  >
-                    {demoInitState.loading ? "Initializing..." : "Initialize demo data"}
-                    <Database className="h-4 w-4" />
-                  </MotionButton>
-                </div>
-
-                <div className="mt-4 grid gap-4 xl:grid-cols-[220px_1fr]">
-                  <aside className="rounded-[24px] border-[3px] border-black bg-[#f7f2e8] p-3 shadow-[6px_6px_0_0_#111]">
-                    <div className="rounded-[20px] border-[3px] border-black bg-white px-3 py-2 shadow-[4px_4px_0_0_#111]">
-                      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-ink-muted">
-                        Slicers
-                      </p>
-                    </div>
-                    <div className="mt-3 space-y-2">
-                      {lookerSlicers.map((slicer) => (
-                        <button
-                          key={slicer.label}
-                          type="button"
-                          className="flex w-full items-center justify-between gap-3 rounded-[18px] border-[3px] border-black bg-white px-3 py-3 text-left shadow-[4px_4px_0_0_#111]"
-                        >
-                          <span>
-                            <span className="block text-[11px] font-black uppercase tracking-[0.18em] text-ink-muted">
-                              {slicer.label}
-                            </span>
-                            <span className="mt-1 block text-sm font-black tracking-[-0.03em] text-ink">
-                              {slicer.value}
-                            </span>
-                          </span>
-                          <span className="rounded-full border-[2px] border-black bg-[#a7f3d0] px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-ink">
-                            Active
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="mt-3 rounded-[18px] border-[3px] border-black bg-[#2f6bff] p-3 text-white shadow-[4px_4px_0_0_#111]">
-                      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
-                        Comparison ward
-                      </p>
-                      <div className="mt-2">
-                        <label className="text-[11px] font-black uppercase tracking-[0.18em] text-white/70">
-                          Compare against
-                        </label>
-                        <select
-                          value={comparisonWard}
-                          onChange={(event) => setComparisonWard(event.target.value)}
-                          className="mt-2 w-full rounded-full border-[3px] border-black bg-white px-3 py-2 text-sm font-black text-ink outline-none shadow-[4px_4px_0_0_#111]"
-                        >
-                          {scenarios.map((item) => (
-                            <option key={item.ward} value={item.ward}>
-                              {item.ward}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <p className="mt-2 text-xs leading-5 text-white/80">
-                        Compare {scenario.ward} with {comparisonScenario.ward} to show a live decision delta.
-                      </p>
-                    </div>
-                  </aside>
-
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {lookerTabs.map((tab) => (
-                        <button
-                          key={tab.id}
-                          type="button"
-                          onClick={() => setLookerTab(tab.id)}
-                          className={`rounded-full border-[3px] border-black px-4 py-2 text-xs font-black uppercase tracking-[0.16em] shadow-[4px_4px_0_0_#111] transition ${
-                            lookerTab === tab.id
-                              ? "bg-[#2f6bff] text-white"
-                              : "bg-white text-ink-muted"
-                          }`}
-                        >
-                          {tab.label}
-                        </button>
-                      ))}
-                      <div className="ml-auto rounded-full border-[3px] border-black bg-[#a7f3d0] px-4 py-2 text-xs font-black uppercase tracking-[0.16em] shadow-[4px_4px_0_0_#111]">
-                        {platformLive.bigquery ? "BigQuery live" : "BigQuery ready"}
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-4">
-                      {lookerMetrics.map((metric) => (
-                        <div
-                          key={metric.label}
-                          className="rounded-[22px] border-[3px] border-black bg-[#0e1b2b] p-4 text-white shadow-[6px_6px_0_0_#111]"
-                        >
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
-                            {metric.label}
-                          </p>
-                          <p className="mt-2 text-2xl font-black tracking-[-0.05em]">{metric.value}</p>
-                          <p className="mt-2 text-xs leading-5 text-white/70">{metric.note}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <motion.div
-                      key={lookerTab}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25, ease: "easeOut" }}
-                      className="rounded-[28px] border-[3px] border-black bg-[#0e1b2b] p-4 text-white shadow-[8px_8px_0_0_#111]"
-                    >
-                      {lookerTab === "summary" ? (
-                        <div className="grid gap-4 lg:grid-cols-[0.56fr_0.44fr]">
-                          <div>
-                            <div className="flex items-center justify-between gap-3">
-                              <div>
-                                <p className="text-xs font-black uppercase tracking-[0.22em] text-white/60">
-                                  Executive snapshot
-                                </p>
-                                <h4 className="mt-1 text-xl font-black tracking-[-0.04em]">
-                                  Dashboard snapshot
-                                </h4>
-                              </div>
-                              <div className="rounded-full border-[3px] border-white/20 bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-white">
-                                {platformLive.bigquery ? "BigQuery live" : "Demo source"}
-                              </div>
-                            </div>
-
-                            <div className="mt-4 grid grid-cols-12 gap-2">
-                              {scenario.chart.slice(-8).map((value, index) => (
-                                <div key={`${scenario.id}-${index}`} className="col-span-1 flex h-32 items-end">
-                                  <div
-                                    className="w-full rounded-t-full border-[2px] border-white/70 bg-[#8bd3ff]"
-                                    style={{ height: `${Math.max(24, value * 100)}%` }}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-
-                            <p className="mt-4 text-sm leading-6 text-white/82">
-                              {lookerStatus.live
-                                ? "The leadership dashboard can open directly from this surface, with the same ward filter context preserved."
-                                : "This embed shell mirrors the live Looker experience: filters, a KPI ribbon, and drill-down navigation are already in place."}
-                            </p>
-                          </div>
-
-                          <div className="space-y-3">
-                            {[
-                              {
-                                label: "Live data plane",
-                                value: platformLive.bigquery ? "BigQuery connected" : "BigQuery ready",
-                                tone: "bg-[#a7f3d0]"
-                              },
-                              {
-                                label: "Response lane",
-                                value: activeRecommendation.responseWindow,
-                                tone: "bg-[#ffe98a]"
-                              },
-                              {
-                                label: "Metric owner",
-                                value: scenario.tag,
-                                tone: "bg-[#ff9fb0]"
-                              }
-                            ].map((item) => (
-                              <div
-                                key={item.label}
-                                className={`rounded-[22px] border-[3px] border-white/15 ${item.tone} p-4 text-ink shadow-[5px_5px_0_0_#111]`}
-                              >
-                                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-ink-muted">
-                                  {item.label}
-                                </p>
-                                <p className="mt-2 text-lg font-black tracking-[-0.04em]">{item.value}</p>
-                              </div>
-                            ))}
-
-                            <div className="rounded-[22px] border-[3px] border-white/15 bg-white/6 p-4">
-                              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/60">
-                                Refresh
-                              </p>
-                              <p className="mt-2 text-sm leading-6 text-white/82">
-                                {lookerGeneratedAt
-                                  ? `Last synced from the demo manifest at ${new Date(lookerGeneratedAt).toLocaleTimeString([], {
-                                      hour: "numeric",
-                                      minute: "2-digit"
-                                    })}.`
-                                  : "Connected to the current scenario context and ready to refresh."}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {lookerTab === "drilldown" ? (
-                        <div className="grid gap-4 lg:grid-cols-[0.4fr_0.6fr]">
-                          <div className="space-y-3">
-                            <div className="rounded-[22px] border-[3px] border-white/10 bg-white/5 p-4">
-                              <p className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
-                                Signal depth
-                              </p>
-                              <div className="mt-3 space-y-3">
-                                {lookerSignals.map((signal, index) => (
-                                  <div key={signal.name} className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3">
-                                    <div className="flex items-center justify-between gap-3">
-                                      <div>
-                                        <p className="text-xs font-black uppercase tracking-[0.18em] text-white/55">
-                                          Signal {index + 1}
-                                        </p>
-                                        <p className="mt-1 text-sm font-black tracking-[-0.03em] text-white">
-                                          {signal.name}
-                                        </p>
-                                      </div>
-                                      <div className={`rounded-full border-[2px] border-black px-3 py-1 text-xs font-black uppercase tracking-[0.14em] text-ink shadow-[3px_3px_0_0_#111] ${signal.tone}`}>
-                                        {Math.round(signal.value * 100)}%
-                                      </div>
-                                    </div>
-                                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/15">
-                                      <div
-                                        className="h-full rounded-full bg-[#8bd3ff]"
-                                        style={{ width: `${Math.max(24, signal.value * 100)}%` }}
-                                      />
-                                    </div>
-                                    <p className="mt-2 text-xs leading-5 text-white/72">
-                                      {signal.note}
-                                    </p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            <div className="rounded-[22px] border-[3px] border-white/10 bg-white/5 p-4">
-                              <p className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
-                                Ward comparison
-                              </p>
-                              <p className="mt-2 text-sm leading-6 text-white/82">
-                                {scenario.ward} vs {comparisonScenario.ward}
-                              </p>
-                              <div className="mt-3 rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3">
-                                <div className="flex items-center justify-between gap-3">
-                                  <span className="text-xs font-black uppercase tracking-[0.16em] text-white/55">
-                                    Risk delta
-                                  </span>
-                                  <span className={`rounded-full border-[2px] border-black px-3 py-1 text-xs font-black uppercase tracking-[0.14em] text-ink shadow-[3px_3px_0_0_#111] ${comparisonDelta >= 0 ? "bg-[#ff9fb0]" : "bg-[#a7f3d0]"}`}>
-                                    {comparisonDelta >= 0 ? "+" : ""}
-                                    {comparisonDelta}
-                                  </span>
-                                </div>
-                                <p className="mt-2 text-xs leading-5 text-white/72">
-                                  The comparison ward is {comparisonDelta >= 0 ? "higher" : "lower"} than the current ward by {Math.abs(comparisonDelta)} risk points.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div className="rounded-[22px] border-[3px] border-white/10 bg-white/5 p-4">
-                              <p className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
-                                Trend over time
-                              </p>
-                              <div className="mt-3 overflow-hidden rounded-[18px] border-[2px] border-white/10">
-                                <table className="w-full border-collapse text-left">
-                                  <thead className="bg-white/8">
-                                    <tr>
-                                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/60">
-                                        Period
-                                      </th>
-                                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/60">
-                                        Risk
-                                      </th>
-                                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/60">
-                                        Delta
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {trendRows.map((row) => (
-                                      <tr key={row.period} className="border-t border-white/10">
-                                        <td className="px-3 py-3 text-sm font-black text-white">{row.period}</td>
-                                        <td className="px-3 py-3 text-sm text-white/85">{row.signal}</td>
-                                        <td className="px-3 py-3 text-sm text-white/75">{row.delta}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-
-                            <div className="rounded-[22px] border-[3px] border-white/10 bg-white/5 p-4">
-                              <p className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
-                                Mini table
-                              </p>
-                              <div className="mt-3 overflow-hidden rounded-[18px] border-[2px] border-white/10">
-                                <table className="w-full border-collapse text-left">
-                                  <thead className="bg-white/8">
-                                    <tr>
-                                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/60">
-                                        Metric
-                                      </th>
-                                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/60">
-                                        This ward
-                                      </th>
-                                      <th className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/60">
-                                        Compare
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {[
-                                      ["Risk", scenario.riskScore, comparisonScenario.riskScore],
-                                      ["Confidence", `${Math.round(scenario.confidence * 100)}%`, `${Math.round(comparisonScenario.confidence * 100)}%`],
-                                      ["Window", scenario.responseWindow, comparisonScenario.responseWindow]
-                                    ].map(([metric, current, compare]) => (
-                                      <tr key={metric} className="border-t border-white/10">
-                                        <td className="px-3 py-3 text-sm font-black text-white">{metric}</td>
-                                        <td className="px-3 py-3 text-sm text-white/85">{current}</td>
-                                        <td className="px-3 py-3 text-sm text-white/75">{compare}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {lookerTab === "alerts" ? (
-                        <div className="grid gap-4 lg:grid-cols-[0.48fr_0.52fr]">
-                          <div className="rounded-[22px] border-[3px] border-white/10 bg-white/5 p-4">
-                            <p className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
-                              Alert routing
-                            </p>
-                            <div className="mt-3 space-y-3">
-                              {scenario.workflow.map((item, index) => (
-                                <div key={item.step} className="rounded-[18px] border-[2px] border-white/10 bg-white/5 p-3">
-                                  <div className="flex items-center justify-between gap-3">
-                                    <p className="text-sm font-black tracking-[-0.03em] text-white">
-                                      {item.step}
-                                    </p>
-                                    <span className="text-[11px] font-black uppercase tracking-[0.14em] text-white/55">
-                                      {index + 1}
-                                    </span>
-                                  </div>
-                                  <p className="mt-2 text-xs leading-5 text-white/72">{item.detail}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div className="rounded-[22px] border-[3px] border-white/10 bg-white/5 p-4">
-                              <p className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
-                                Publish status
-                              </p>
-                              <p className="mt-2 text-sm leading-6 text-white/82">
-                                {demoInitState.result?.storage?.connected
-                                  ? "The demo initializer can write the bundle to Cloud Storage and seed BigQuery in one pass."
-                                  : "The initializer shows how a real operator would seed BigQuery and generate the same manifest for the dashboard."}
-                              </p>
-                            </div>
-
-                            <div className="rounded-[22px] border-[3px] border-white/10 bg-white/5 p-4">
-                              <p className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
-                                Dashboard action
-                              </p>
-                              <p className="mt-2 text-sm leading-6 text-white/82">
-                                {lookerStatus.dashboardUrl
-                                  ? "Open the linked dashboard for a live leadership view."
-                                  : "Connect a dashboard URL to turn this preview into a live embed."}
-                              </p>
-                              {lookerStatus.dashboardUrl ? (
-                                <a
-                                  href={lookerStatus.dashboardUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="mt-4 inline-flex items-center gap-2 rounded-full border-[3px] border-white bg-white px-4 py-3 text-xs font-black uppercase tracking-[0.16em] text-ink shadow-[4px_4px_0_0_#111]"
-                                >
-                                  Open dashboard
-                                  <ExternalLink className="h-4 w-4" />
-                                </a>
-                              ) : null}
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-                    </motion.div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {[
-                    platformLive.bigquery ? "BigQuery live" : "BigQuery ready",
-                    platformLive.storage ? "Cloud Storage live" : "Cloud Storage ready",
-                    platformLive.cloudRun ? "Cloud Run live" : "Cloud Run ready",
-                    lookerStatus.live ? "Looker linked" : "Looker preview"
-                  ].map((chip) => (
-                    <span
-                      key={chip}
-                      className="rounded-full border-[3px] border-black bg-[#a7f3d0] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] shadow-[4px_4px_0_0_#111]"
-                    >
-                      {chip}
-                    </span>
-                  ))}
-                </div>
-
-                {demoInitState.result ? (
-                  <div className="mt-4 rounded-[24px] border-[3px] border-black bg-[#ffe98a] p-4 shadow-[6px_6px_0_0_#111]">
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-ink-muted">
-                      Demo initializer
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-ink-soft">
-                      Seeded {demoInitState.result.manifest?.scenarioCount ?? 0} scenarios,{" "}
-                      {demoInitState.result.bigquery?.connected ? "wrote rows to BigQuery" : "kept the seed local"},{" "}
-                      and {demoInitState.result.storage?.connected ? "stored the demo bundle in Cloud Storage." : "left the bundle local."}
-                    </p>
-                  </div>
-                ) : null}
-
-                {lookerStatus.dashboardUrl ? (
-                  <a
-                    href={lookerStatus.dashboardUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-4 inline-flex items-center gap-2 rounded-full border-[3px] border-black bg-[#2f6bff] px-4 py-3 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[6px_6px_0_0_#111]"
-                  >
-                    Open dashboard
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                ) : null}
-              </div>
-            </div>
-          </div>
-            </motion.article>
+            <LookerWorkspace
+              lookerStatus={lookerStatus}
+              platformLive={platformLive}
+              demoInitState={demoInitState}
+              onDemoInit={handleDemoInit}
+              comparisonWard={comparisonWard}
+              setComparisonWard={setComparisonWard}
+              scenarios={scenarios}
+              scenario={scenario}
+              comparisonScenario={comparisonScenario}
+              lookerTab={lookerTab}
+              setLookerTab={setLookerTab}
+              lookerTabs={lookerTabs}
+              lookerSlicers={lookerSlicers}
+              lookerMetrics={lookerMetrics}
+              lookerSignals={lookerSignals}
+              trendRows={trendRows}
+              activeRecommendation={activeRecommendation}
+              comparisonDelta={comparisonDelta}
+              lookerGeneratedAt={lookerGeneratedAt}
+            />
 
             <motion.article
               initial={{ opacity: 0, y: 20 }}
@@ -1819,17 +1702,17 @@ export default function Page() {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.22em] text-ink-muted">
-                    GKE deployment path
+                    Deployment path
                   </p>
                   <h3 className="mt-2 font-[family-name:var(--font-display)] text-4xl font-black tracking-[-0.06em] text-ink">
                     Container path
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-ink-soft">
-                    The same app ships cleanly as a container with a namespace, deployment, and service manifest.
+                    The same app ships cleanly as a container with a deployment manifest and rollout steps.
                   </p>
                 </div>
                 <div className={`rounded-full border-[3px] border-black px-4 py-2 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#111] ${gkeStatus.live ? "bg-[#a7f3d0]" : "bg-white"}`}>
-                  {gkeStatus.live ? "Cluster linked" : "Path ready"}
+                  {gkeStatus.live ? "Live path" : "Path ready"}
                 </div>
               </div>
 
@@ -1891,7 +1774,7 @@ export default function Page() {
                   What this path gives you
                 </p>
                 <p className="mt-2 text-sm leading-6 text-white/85">
-                  The app is container-ready, the manifest is checked in, and the same API routes can run on a managed cluster when you want more control than Cloud Run.
+                  The app is container-ready, the manifest is checked in, and the same API routes can run on a managed cluster when you want more control over the runtime.
                 </p>
               </div>
             </motion.article>
@@ -1900,21 +1783,25 @@ export default function Page() {
           <div className="mt-8 grid gap-4 lg:grid-cols-[0.42fr_0.58fr]">
             <div className="rounded-[32px] border-[3px] border-black bg-[#ff9fb0] p-6 shadow-[10px_10px_0_0_#111]">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-ink-muted">
-                Cloud story
+                How the system works
               </p>
               <h3 className="mt-2 font-[family-name:var(--font-display)] text-4xl font-black tracking-[-0.06em] text-ink">
                 From raw signal to action in one loop.
               </h3>
               <p className="mt-4 text-base leading-7 text-ink-soft">
-                BigQuery keeps the history. Vertex AI and Gemini interpret what changed. AlloyDB
-                remembers similar cases. Cloud Run and Cloud Functions execute the response.
-                ADK ties the loop together. Looker keeps leadership aligned.
+                The platform keeps the history, scores what changed, retrieves similar cases,
+                drafts the response, and routes the follow-up without losing the decision trail.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              {googleStack.map(([service, copy], index) => (
+              {[
+                ["Keep it current", "The app refreshes the selected scenario and shows the latest answer at a glance."],
+                ["Compare what matters", "You can switch the ward, load another prompt, and watch the deltas update."],
+                ["Explain the reason", "Every recommendation keeps the evidence trail in view for quick review."],
+                ["Act without delay", "The workspace surfaces the next step so the team can move faster."]
+              ].map(([title, copy], index) => (
                 <motion.div
-                  key={service}
+                  key={title}
                   whileHover={{ y: -3 }}
                   className={`rounded-[24px] border-[3px] border-black p-4 shadow-[8px_8px_0_0_#111] ${
                     index % 4 === 0
@@ -1926,9 +1813,8 @@ export default function Page() {
                           : "bg-white"
                   }`}
                 >
-                  <div className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.16em] text-ink-muted">
-                    <CloudCog className="h-4 w-4" />
-                    {service}
+                  <div className="text-sm font-black uppercase tracking-[0.16em] text-ink-muted">
+                    Utility
                   </div>
                   <p className="mt-3 text-sm leading-6 text-ink-soft">{copy}</p>
                 </motion.div>
@@ -1978,7 +1864,7 @@ export default function Page() {
                 }`}
               >
                 <div className="inline-flex rounded-full border-[3px] border-black bg-white px-3 py-1 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#111]">
-                  {index === 0 ? "Trace" : index === 1 ? "Demo mode" : "ADK"}
+                  {index === 0 ? "Trace" : index === 1 ? "Demo mode" : "Workflow"}
                 </div>
                 <h3 className="mt-4 font-[family-name:var(--font-display)] text-3xl font-black tracking-[-0.05em] text-ink">
                   {item.title}
@@ -2014,7 +1900,15 @@ export default function Page() {
               </div>
 
               <div className="flex flex-col gap-3 lg:items-end">
-                <MotionButton variant="secondary" className="w-full justify-center sm:w-auto">
+                <MotionButton
+                  variant="secondary"
+                  className="w-full justify-center sm:w-auto"
+                  onClick={() => {
+                    setWorkspaceMode("deploy");
+                    recordAction("Demo requested", "A guided handoff is ready.");
+                    document.getElementById("agent")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
                   Request a demo
                   <ArrowRight className="h-4 w-4" />
                 </MotionButton>
@@ -2031,14 +1925,12 @@ export default function Page() {
           <footer className="mt-6 flex flex-col gap-4 border-t-2 border-black/15 pt-6 text-sm text-ink-muted md:flex-row md:items-center md:justify-between">
             <p>CyVix for civic decision intelligence.</p>
             <div className="flex flex-wrap items-center gap-4">
-              <span>Vertex AI</span>
-              <span>Gemini</span>
-              <span>BigQuery</span>
-              <span>Cloud Run</span>
-              <span>ADK</span>
-              <span>AlloyDB</span>
-              <span>Cloud Functions</span>
-              <span>Looker</span>
+              <span>Signals</span>
+              <span>Scoring</span>
+              <span>Memory</span>
+              <span>Workflow</span>
+              <span>Reports</span>
+              <span>Deployment</span>
             </div>
           </footer>
         </section>

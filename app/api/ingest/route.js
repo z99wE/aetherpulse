@@ -1,5 +1,7 @@
 import { getScenario } from "@/lib/mock-data";
 import { persistIngestBatch } from "@/lib/gcp-client";
+import { enforceAuthIfRequired } from "@/lib/auth";
+import { isAllowedMethod, jsonError, normalizeScenarioId } from "@/lib/request-utils";
 
 function buildIngestBatch(scenario) {
   const now = new Date();
@@ -24,8 +26,17 @@ function buildIngestBatch(scenario) {
 }
 
 export async function GET(request) {
+  if (!isAllowedMethod(request, ["GET"])) {
+    return jsonError("Method not allowed", 405);
+  }
+
+  const auth = enforceAuthIfRequired(request);
+  if (!auth.allowed) {
+    return auth.response;
+  }
+
   const { searchParams } = new URL(request.url);
-  const scenarioId = searchParams.get("scenarioId") ?? "transit";
+  const scenarioId = normalizeScenarioId(searchParams.get("scenarioId"));
   const scenario = getScenario(scenarioId);
   const batch = buildIngestBatch(scenario);
   const storage = await persistIngestBatch({ scenarioId, batch });

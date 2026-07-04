@@ -1,0 +1,27 @@
+name: cyvix-civic-agent
+platform: Gemini Enterprise Agent Platform
+purpose: civic_decision_intelligence
+memory:
+  source: BigQuery
+  retrieval: AlloyDB
+tools:
+  - name: assess_risk
+    source: Vertex AI
+  - name: explain_outcome
+    source: Gemini
+  - name: publish_action
+    source: Cloud Run
+  - name: trigger_follow_up
+    source: Cloud Functions
+workflow:
+  - observe
+  - reason
+  - retrieve
+  - explain
+  - act
+  - follow_up
+outputs:
+  - decision_packet
+  - resident_summary
+  - leadership_summary
+

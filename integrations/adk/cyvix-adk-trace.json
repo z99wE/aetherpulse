@@ -1,0 +1,37 @@
+{
+  "agent": "CyVix Civic Agent",
+  "framework": "Google ADK",
+  "trace": [
+    {
+      "step": "observe",
+      "service": "BigQuery",
+      "detail": "Load ward baselines and recent risk history."
+    },
+    {
+      "step": "reason",
+      "service": "Vertex AI",
+      "detail": "Score anomaly and predict likely outcome."
+    },
+    {
+      "step": "retrieve",
+      "service": "AlloyDB",
+      "detail": "Find similar incidents and playbooks."
+    },
+    {
+      "step": "explain",
+      "service": "Gemini",
+      "detail": "Convert the result into civic language."
+    },
+    {
+      "step": "act",
+      "service": "Cloud Run",
+      "detail": "Publish the decision packet and incident summary."
+    },
+    {
+      "step": "follow_up",
+      "service": "Cloud Functions",
+      "detail": "Trigger a recheck and escalate if the signal persists."
+    }
+  ]
+}
+

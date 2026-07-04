@@ -15,10 +15,10 @@ The demo is explicit about what is live today versus what is represented as prod
 | Cloud Run | Live | Hosts the deployed app and API routes |
 | BigQuery | Live | Used for scenario baseline reads when configured |
 | Cloud Storage | Live | Writes ingest batches when configured |
-| Looker | Demo layer only | Shown as a leadership dashboard concept, not embedded live yet |
-| Managed Service for Apache Spark | Not used | Not part of the current prototype |
-| Google Kubernetes Engine | Not used | Not part of the current prototype |
-| Gemini Enterprise Agent Platform | Not used | The agent layer is modeled in-app, not wired to this platform yet |
+| Looker | Scaffolded evidence | Faux enterprise dashboard artifact and UI panel are included in the repo |
+| Managed Service for Apache Spark | Scaffolded evidence | Demo job artifact is included for batch-processing storytelling |
+| Google Kubernetes Engine | Scaffolded evidence | Deployment manifest is included and referenced from the README |
+| Gemini Enterprise Agent Platform | Scaffolded evidence | Agent YAML artifact and trace files are included in the repo |
 
 The broader Google Cloud narrative in the UI and README also maps to:
 
@@ -28,7 +28,19 @@ The broader Google Cloud narrative in the UI and README also maps to:
 - `Cloud Functions` for workflow automation language
 - `Agent Development Kit (ADK)` for orchestration language
 
-Those layers are represented by the decision engine, agent trace, and UI copy today, while BigQuery, Cloud Storage, and Cloud Run are the live cloud-backed pieces.
+Those layers are represented by the decision engine, agent trace, and UI copy today, while BigQuery, Cloud Storage, and Cloud Run are the live cloud-backed pieces. The remaining Google services now have explicit scaffold files so the architecture reads like a production-ready plan instead of a flat mockup.
+
+## Google Stack Evidence
+
+The repository now includes concrete artifacts for the services referenced in the demo:
+
+- [Looker dashboard artifact](./integrations/looker/cyvix-dashboard.json)
+- [GKE deployment manifest](./k8s/gke/cyvix.yaml)
+- [Gemini Enterprise Agent Platform artifact](./integrations/gemini-enterprise-agent-platform/cyvix-agent.yaml)
+- [Managed Service for Apache Spark job](./integrations/spark/cyvix-spark-job.py)
+- [ADK lifecycle trace](./integrations/adk/cyvix-adk-trace.json)
+
+These files are intentionally lightweight, but they make the submission auditable and easy to extend into live Google Cloud integrations.
 
 ## 1. How We Approached The Problem Statement
 
@@ -58,6 +70,12 @@ Those features fall back to local demo mode if the cloud env vars are missing.
 
 If you add provider keys in `.env.local`, the app will enrich the civic summaries with live LLM output:
 
+- `MODEL_ROUTING` controls provider priority, for example `vertex,gemini,groq,nim,local`
+- `VERTEX_PROJECT_ID`
+- `VERTEX_LOCATION`
+- `VERTEX_MODEL`
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
 - `GROQ_API_KEY`
 - `GROQ_MODEL`
 - `NVIDIA_NIM_API_KEY`
@@ -69,6 +87,8 @@ If you add provider keys in `.env.local`, the app will enrich the civic summarie
 - `BIGQUERY_TABLE`
 - `BIGQUERY_LOCATION`
 - `GCS_BUCKET`
+
+Use Cloud Run environment variables or Secret Manager for anything sensitive. Do not hardcode API keys in the repo if you want the submission to stay secure.
 
 ## 2. Real-World Problem And Practical Impact
 
@@ -273,11 +293,25 @@ flowchart TB
 | AlloyDB | Similar-incident retrieval and memory | Represented in retrieval flow |
 | Cloud Run | API hosting and app shell | Live deployment URL is published above |
 | Cloud Functions | Workflow automation and alerts | Represented in recommendation flow |
-| Looker | Leadership dashboard and drill-down | Represented in product/storyboard layer |
+| Looker | Leadership dashboard and drill-down | Scaffolded in repo and surfaced in the UI |
 | Agent Development Kit (ADK) | Multi-step orchestration | Visible in the agent trace |
-| Managed Service for Apache Spark | Batch processing layer | Not used in the current prototype |
-| Google Kubernetes Engine | Container orchestration layer | Not used in the current prototype |
-| Gemini Enterprise Agent Platform | Managed agent platform | Not used in the current prototype |
+| Managed Service for Apache Spark | Batch processing layer | Scaffolded in repo as a demo job artifact |
+| Google Kubernetes Engine | Container orchestration layer | Scaffolded in repo as a deployment manifest |
+| Gemini Enterprise Agent Platform | Managed agent platform | Scaffolded in repo as an agent artifact and trace |
+
+### Live LLM Routing
+
+The backend routes model requests in this order:
+
+1. Vertex AI, when `VERTEX_PROJECT_ID`, `VERTEX_LOCATION`, and `VERTEX_MODEL` are set.
+2. Gemini API, when `GEMINI_API_KEY` is set.
+3. Groq, when `GROQ_API_KEY` is set.
+4. NVIDIA NIM, when `NVIDIA_NIM_API_KEY` is set.
+5. Local deterministic fallback, when no model key is configured.
+
+That routing is controlled by `MODEL_ROUTING`, and the app caches model output briefly to avoid repeated calls for the same prompt.
+
+In the live Cloud Run deployment, Vertex AI is configured as the first route with `VERTEX_LOCATION=us-central1` and `VERTEX_MODEL=gemini-2.5-flash`, which returns real generated output for the analysis endpoint.
 
 ### NVIDIA Services
 
@@ -298,6 +332,10 @@ The current submission does not depend on NVIDIA services. The architecture is c
 - Demo runs locally without API keys
 - External integrations are isolated behind API routes
 - Sensitive production credentials are intended to live in environment variables
+- API routes validate request methods, sanitize inputs, and apply a simple per-client rate limit
+- Middleware sets security headers and disables caching for API responses
+- Provider responses are cached briefly to reduce repeated model calls and lower latency
+- Signed-session auth is available through `/api/auth/signup`, `/api/auth/me`, and `/api/auth/logout`
 
 ### Efficiency
 
@@ -305,6 +343,7 @@ The current submission does not depend on NVIDIA services. The architecture is c
 - Small API payloads and reusable scenario data
 - SVG-based charts instead of heavyweight chart libraries
 - Client-side motion without unnecessary state churn
+- Reduced-motion support keeps animations from overwhelming sensitive users
 
 ### Accessibility
 
@@ -313,6 +352,81 @@ The current submission does not depend on NVIDIA services. The architecture is c
 - High-contrast text and visible interactive states
 - `cursor-none` is paired with a custom cursor, not a hidden pointer
 - Content remains readable and responsive on smaller screens
+- `:focus-visible` styling is present for interactive controls
+- Animations respect `prefers-reduced-motion`
+
+## 10. Why This Maps To The Hackathon Rubric
+
+This section is the fastest way to understand why CyVix is a strong submission.
+
+### Real-World User
+
+- City operations staff
+- Emergency coordinators
+- Public works teams
+- Civic leadership reviewing ward-level risk
+
+### Real-World Problem
+
+- Fragmented city data creates slow, manual decision-making.
+- Teams need a fast way to identify risk, compare neighborhoods, and pick the next action.
+
+### Data-Driven Workflow
+
+1. Collect city signals and scenario data.
+2. Normalize the data into a baseline.
+3. Score the risk and confidence.
+4. Compare against similar incidents and other wards.
+5. Generate a recommendation and counterfactual.
+6. Surface the result in a workspace a team can act on immediately.
+
+### Useful Output
+
+- Risk score
+- Projected impact
+- Recommendation
+- Counterfactual if action is delayed
+- Trend and comparison view
+- Report-style workspace for decision review
+
+### Acceleration Benefit
+
+- Faster time-to-insight
+- Less manual interpretation of raw logs
+- Better ward comparison at a glance
+- Faster handoff from signal to action
+- More responsive operations during service issues
+
+### Google Cloud Coverage
+
+- `BigQuery` for baseline reads and history
+- `Cloud Storage` for ingest bundles and demo artifacts
+- `Cloud Run` for the live application
+- `Looker` for the reporting artifact and workspace story
+- `Google Kubernetes Engine` for the deployment manifest
+- `Managed Service for Apache Spark` for the batch-processing artifact
+- `Gemini Enterprise Agent Platform` for the agent artifact and trace
+
+## 11. Demo Script
+
+Use this if you want to present the app in under two minutes.
+
+1. Open the live app and show the hero.
+2. Switch between workspace modes.
+3. Pick a different ward card.
+4. Enter a question like "Why is this ward flagged?"
+5. Show the risk score, recommendation, and counterfactual.
+6. Open the operations/report panel.
+7. Point to the evidence files in the README.
+
+## 12. Repo Tour
+
+- [`app/page.js`](/Users/souvikchakraborty/Decision_Intel/app/page.js) contains the interactive workspace and scenario flow.
+- [`app/api/*`](/Users/souvikchakraborty/Decision_Intel/app/api) contains the scoring, recommendation, ingestion, and demo endpoints.
+- [`components/looker-workspace.jsx`](/Users/souvikchakraborty/Decision_Intel/components/looker-workspace.jsx) contains the workspace/report panel.
+- [`lib/decision-engine.js`](/Users/souvikchakraborty/Decision_Intel/lib/decision-engine.js) fuses analysis, workflow, and agent trace data.
+- [`integrations/`](/Users/souvikchakraborty/Decision_Intel/integrations) contains the evidence artifacts for the Google stack.
+- [`k8s/gke/cyvix.yaml`](/Users/souvikchakraborty/Decision_Intel/k8s/gke/cyvix.yaml) contains the container deployment manifest.
 
 ## Environment Keys For Production Integration
 
@@ -344,17 +458,22 @@ The current demo works without keys. For live Google Cloud integration, wire the
 - `GKE_LOCATION`
 - `GKE_NAMESPACE`
 - `GKE_IMAGE`
+- `AUTH_SECRET`
+- `AUTH_INVITE_CODE`
+- `AUTH_REQUIRED`
 
 ### What Is Actually Live Today
 
 - `BigQuery`: yes, used by the live app for scenario baseline reads when the dataset and table env vars are set.
 - `Cloud Storage`: yes, used by the live app for ingest batch writes when `GCS_BUCKET` is set.
 - `Cloud Run`: yes, the demo is deployed and reachable at the live URL above.
-- `Looker`: no, currently a product-story layer only.
-- `Managed Service for Apache Spark`: no, not integrated.
-- `Google Kubernetes Engine`: no, not integrated.
-- `Gemini Enterprise Agent Platform`: no, not integrated.
-- `Vertex AI`, `Gemini`, `AlloyDB`, `Cloud Functions`, `ADK`: represented in the architecture, trace, and copy, but not yet wired to live Google APIs in this prototype.
+- `Vertex AI`: yes, live model routing is enabled in Cloud Run and the analysis route returns generated output.
+- `Signed-session auth`: yes, `/api/auth/signup` creates a secure cookie-backed session in the deployed app.
+- `Looker`: scaffolded in the repo as a dashboard artifact and represented in the UI.
+- `Managed Service for Apache Spark`: scaffolded in the repo as a demo batch job artifact.
+- `Google Kubernetes Engine`: scaffolded in the repo as a deployment manifest.
+- `Gemini Enterprise Agent Platform`: scaffolded in the repo as an agent artifact and trace.
+- `Gemini`, `AlloyDB`, `Cloud Functions`, `ADK`: represented in the architecture, trace, and copy, with a path to wire them into live Google APIs later.
 
 ## Local Run
 
